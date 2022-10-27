@@ -1,0 +1,6 @@
+.env
+ring-home-assistant-bridge.iml
+token
+node_modules/
+build/
+.idea/
