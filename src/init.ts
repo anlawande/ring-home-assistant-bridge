@@ -2,6 +2,8 @@ import { RingApi } from 'ring-client-api'
 import dotenv from 'dotenv';
 import {acquireRefreshToken} from "./ring-api/refresh-token";
 import * as fs from "fs";
+import sensor from "./ring-api/sensor";
+import store from "./ring-api/store";
 
 dotenv.config();
 
@@ -46,9 +48,23 @@ async function getAll(ringApi: RingApi) {
     const locations = await ringApi.getLocations();
     for (let location of locations) {
         await location.createConnection();
-        location.onDeviceList.subscribe((value: any) => console.log(JSON.stringify(value)));
-        location.onDataUpdate.subscribe((value: any) => console.log(JSON.stringify(value)));
+        location.onDeviceList.subscribe(addEntitiesToStore);
+        // location.onDataUpdate.subscribe((value: any) => console.log(JSON.stringify(value)));
     }
+}
+
+function addEntitiesToStore(json: any) {
+    const deviceType = sensor.deviceType;
+    let devices = [];
+    for (let jsonObject of json["body"]) {
+        if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
+            devices.push(jsonObject);
+        }
+    }
+    const typedObjects = sensor.deserialize(devices);
+    sensor.addSensors(typedObjects);
+
+    console.log(store.printStore());
 }
 
 run();
