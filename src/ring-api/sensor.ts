@@ -17,7 +17,7 @@ function deserialize(json: any[]): Sensor[] {
     for (let jsonObj of json) {
         const sensor: Sensor = {
             name: jsonObj["general"]["v2"]["name"],
-            id: jsonObj["general"]["v2"]["catalogId"],
+            id: jsonObj["general"]["v2"]["zid"],
             state: jsonObj["device"]["v1"]["faulted"],
         }
         sensors.push(sensor);
