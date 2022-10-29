@@ -4,6 +4,7 @@ import {acquireRefreshToken} from "./ring-api/refresh-token";
 import * as fs from "fs";
 import sensor from "./ring-api/sensor";
 import server from "./server";
+import {isBoolean} from "util";
 
 dotenv.config();
 
@@ -51,7 +52,7 @@ async function setSubscriptions(ringApi: RingApi) {
         for (let location of locations) {
             await location.createConnection();
             location.onDeviceList.subscribe(addEntitiesToStore);
-            // location.onDataUpdate.subscribe((value: any) => console.log(JSON.stringify(value)));
+            location.onDataUpdate.subscribe(addEntitiesToStore);
         }
         server.setHealth(true);
     }
@@ -61,18 +62,36 @@ async function setSubscriptions(ringApi: RingApi) {
     }
 }
 
+let hasInitialized = false;
+
 function addEntitiesToStore(json: any) {
-    const deviceType = sensor.deviceType;
-    let devices = [];
-    for (let jsonObject of json["body"]) {
-        if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
-            devices.push(jsonObject);
+    try {
+        if (json["msg"] !== 'DataUpdate' && json["msg"] !== "DeviceInfoDocGetList") {
+            return;
+        }
+        const deviceType = sensor.deviceType;
+        let devices = [];
+        for (let jsonObject of json["body"]) {
+            if (!jsonObject["device"]) {
+                continue;
+            }
+            if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
+                devices.push(jsonObject);
+            }
+        }
+        const typedObjects = sensor.deserialize(devices);
+        sensor.addSensors(typedObjects);
+
+        if (!hasInitialized && json["msg"] === "DeviceInfoDocGetList") {
+            hasInitialized = true;
+            console.log("Loaded up all devices!");
         }
     }
-    const typedObjects = sensor.deserialize(devices);
-    sensor.addSensors(typedObjects);
-
-    console.log("Loaded up all devices!");
+    catch (e) {
+        console.error(e);
+        console.error(JSON.stringify(json));
+        server.setHealth(false);
+    }
 }
 
 run();

@@ -15,8 +15,11 @@ function getSensorById(sensorId: string): Sensor {
 function deserialize(json: any[]): Sensor[] {
     const sensors: Sensor[] = [];
     for (let jsonObj of json) {
+        let deviceName = jsonObj["general"]["v2"]["name"];
+        deviceName = deviceName || jsonObj["context"]["v1"]["deviceName"];
+
         const sensor: Sensor = {
-            name: jsonObj["general"]["v2"]["name"],
+            name: deviceName,
             id: jsonObj["general"]["v2"]["zid"],
             state: jsonObj["device"]["v1"]["faulted"],
         }

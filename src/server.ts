@@ -17,7 +17,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 function init() {
     app.listen(port, () => {
-        console.log(`Example app listening on port ${port}`)
+        console.log(`ring-home-assistant-bridge app listening on port ${port}`)
     });
 }
 
