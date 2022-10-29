@@ -1,9 +1,11 @@
 version: '3'
 services:
-  homeassistant:
-    container_name: ring-device-bridge
-    image: <>
+  ring-home-assistant-bridge:
+    container_name: ring-home-assistant-bridge
+    image: ring-home-assistant-bridge:latest
     volumes:
-      - ./:/config
-      - /etc/localtime:/etc/localtime:ro
+      - ../ring-home-assistant-bridge/.env:/app/.env
+      - ../ring-home-assistant-bridge/token:/app/token
     restart: unless-stopped
+    ports:
+      - "3123:3000"

@@ -12,7 +12,7 @@ docker build . -t ring-home-assistant-bridge
 
 docker image rm "$prevImage"
 
-cont=$(docker-compose -f ../ha-config/docker-compose.yaml up ring-home-assistant-bridge)
+cont=$(docker-compose run ring-home-assistant-bridge)
 sleep 5
 echo "ctrl+p,ctrl+q to detach"
 #ctrl+p,ctrl+q to detach

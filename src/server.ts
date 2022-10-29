@@ -8,11 +8,11 @@ const port = 3000;
 let healthState = false;
 
 app.get('/entities', (req: Request, res: Response) => {
-    res.send(store.printStore());
+    res.json(store.printStore());
 });
 
 app.get('/health', (req: Request, res: Response) => {
-    res.send({ health: healthState });
+    res.json({ health: healthState });
 });
 
 function init() {

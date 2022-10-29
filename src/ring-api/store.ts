@@ -14,8 +14,8 @@ function getSensorById(sensorId: string): Sensor {
     return store["sensors"][sensorId] || {};
 }
 
-function printStore(): string {
-    return JSON.stringify(store);
+function printStore(): object {
+    return store;
 }
 
 export default {

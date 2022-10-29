@@ -4,7 +4,6 @@ import {acquireRefreshToken} from "./ring-api/refresh-token";
 import * as fs from "fs";
 import sensor from "./ring-api/sensor";
 import server from "./server";
-import {isBoolean} from "util";
 
 dotenv.config();
 
