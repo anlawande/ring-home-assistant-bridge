@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import {acquireRefreshToken} from "./ring-api/refresh-token";
 import * as fs from "fs";
 import sensor from "./ring-api/sensor";
-import store from "./ring-api/store";
+import server from "./server";
 
 dotenv.config();
 
@@ -41,15 +41,23 @@ async function run() {
         refreshToken = newRefreshToken;
         fs.writeFileSync(process.env.tokenFile as string, refreshToken, {encoding: 'utf8'});
     });
-    await getAll(ringApi);
+    await setSubscriptions(ringApi);
+    server.init();
 }
 
-async function getAll(ringApi: RingApi) {
-    const locations = await ringApi.getLocations();
-    for (let location of locations) {
-        await location.createConnection();
-        location.onDeviceList.subscribe(addEntitiesToStore);
-        // location.onDataUpdate.subscribe((value: any) => console.log(JSON.stringify(value)));
+async function setSubscriptions(ringApi: RingApi) {
+    try {
+        const locations = await ringApi.getLocations();
+        for (let location of locations) {
+            await location.createConnection();
+            location.onDeviceList.subscribe(addEntitiesToStore);
+            // location.onDataUpdate.subscribe((value: any) => console.log(JSON.stringify(value)));
+        }
+        server.setHealth(true);
+    }
+    catch (e) {
+        console.log(e);
+        server.setHealth(false);
     }
 }
 
@@ -64,7 +72,7 @@ function addEntitiesToStore(json: any) {
     const typedObjects = sensor.deserialize(devices);
     sensor.addSensors(typedObjects);
 
-    console.log(store.printStore());
+    console.log("Loaded up all devices!");
 }
 
 run();

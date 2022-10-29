@@ -10,10 +10,9 @@ prevImage=$(docker images ring-home-assistant-bridge:latest -q)
 
 docker build . -t ring-home-assistant-bridge
 
-#docker image rm "$prevImage"
+docker image rm "$prevImage"
 
-cont=$(docker-compose run -dti airgram)
+cont=$(docker-compose -f ../ha-config/docker-compose.yaml up ring-home-assistant-bridge)
 sleep 5
 echo "ctrl+p,ctrl+q to detach"
-docker attach --sig-proxy=false "$cont"
 #ctrl+p,ctrl+q to detach
