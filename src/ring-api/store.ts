@@ -1,12 +1,19 @@
-import {Sensor} from "./types";
+import {Lock, Sensor} from "./types";
 
-const store: { [type: string]: {[name: string]: Sensor}} = {
+const store: { [type: string]: {[name: string]: Sensor | Lock}} = {
     sensors: {},
+    locks: {},
 };
 
 function addSensors(sensors: Sensor[]) {
     sensors.forEach(value => {
         store.sensors[value.id] = value;
+    });
+}
+
+function addLocks(locks: Lock[]) {
+    locks.forEach(value => {
+        store.locks[value.id] = value;
     });
 }
 
@@ -20,6 +27,7 @@ function printStore(): object {
 
 export default {
     addSensors,
+    addLocks,
     getSensorById,
     printStore,
 }

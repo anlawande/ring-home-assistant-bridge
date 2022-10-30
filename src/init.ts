@@ -2,8 +2,17 @@ import { RingApi } from 'ring-client-api'
 import dotenv from 'dotenv';
 import {acquireRefreshToken} from "./ring-api/refresh-token";
 import * as fs from "fs";
-import sensor from "./ring-api/sensor";
+import SensorType from "./ring-api/sensor";
+import LockType from "./ring-api/lock";
 import server from "./server";
+import {EntityType} from "./ring-api/types";
+
+const sensor = new SensorType()
+const lock = new LockType()
+
+const typeServiceMap = new Map<string, EntityType<any>>();
+typeServiceMap.set(sensor.getDeviceType(), sensor);
+typeServiceMap.set(lock.getDeviceType(), lock);
 
 dotenv.config();
 
@@ -68,18 +77,21 @@ function addEntitiesToStore(json: any) {
         if (json["msg"] !== 'DataUpdate' && json["msg"] !== "DeviceInfoDocGetList") {
             return;
         }
-        const deviceType = sensor.deviceType;
-        let devices = [];
-        for (let jsonObject of json["body"]) {
-            if (!jsonObject["device"]) {
-                continue;
+        for (let entry of typeServiceMap.entries()) {
+            const deviceType = entry[0];
+            const entityService = entry[1];
+            let devices = [];
+            for (let jsonObject of json["body"]) {
+                if (!jsonObject["device"]) {
+                    continue;
+                }
+                if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
+                    devices.push(jsonObject);
+                }
             }
-            if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
-                devices.push(jsonObject);
-            }
+            const typedObjects = entityService.deserialize(devices);
+            entityService.addAllToStore(typedObjects);
         }
-        const typedObjects = sensor.deserialize(devices);
-        sensor.addSensors(typedObjects);
 
         if (!hasInitialized && json["msg"] === "DeviceInfoDocGetList") {
             hasInitialized = true;
