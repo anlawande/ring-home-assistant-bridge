@@ -1,4 +1,4 @@
-import {EntityType, Lock} from "./types";
+import {EntityType, Lock, LockDeviceType} from "./types";
 import store from "./store";
 
 class LockType implements EntityType<Lock> {
@@ -15,8 +15,14 @@ class LockType implements EntityType<Lock> {
 
             const lock: Lock = {
                 name: deviceName,
-                id: jsonObj["general"]["v2"]["zid"],
-                state: jsonObj["device"]["v1"]["locked"] === 'locked',
+                host: jsonObj["general"]["v2"]["zid"],
+                mac: jsonObj["adapter"]["v1"]["address"],
+                state: {
+                    // @ts-ignore
+                    "locked": jsonObj["device"]["v1"]["locked"] === 'locked',
+                    "battery": jsonObj["general"]["v2"]["batteryLevel"]
+                },
+                deviceType: LockDeviceType,
             }
             locks.push(lock);
         }

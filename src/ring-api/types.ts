@@ -4,15 +4,16 @@ export interface EntityType<T> {
     deserialize(json: any): T[];
 }
 
-
-export interface Sensor {
+export interface RingDevice {
     name: string,
-    id: string,
-    state: boolean,
+    mac: string,
+    host: string,
+    state: { [type: string]: [value: any]},
+    deviceType: string,
 }
 
-export interface Lock {
-    name: string,
-    id: string,
-    state: boolean,
-}
+export interface Sensor extends RingDevice {}
+export interface Lock extends RingDevice {}
+
+export const ContactSensorDeviceType = "ContactSensor"
+export const LockDeviceType = "Lock"

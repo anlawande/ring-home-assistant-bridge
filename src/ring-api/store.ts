@@ -7,13 +7,13 @@ const store: { [type: string]: {[name: string]: Sensor | Lock}} = {
 
 function addSensors(sensors: Sensor[]) {
     sensors.forEach(value => {
-        store.sensors[value.id] = value;
+        store.sensors[value.mac] = value;
     });
 }
 
 function addLocks(locks: Lock[]) {
     locks.forEach(value => {
-        store.locks[value.id] = value;
+        store.locks[value.mac] = value;
     });
 }
 

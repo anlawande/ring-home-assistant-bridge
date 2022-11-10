@@ -1,4 +1,4 @@
-import {EntityType, Sensor} from "./types";
+import {ContactSensorDeviceType, EntityType, Sensor} from "./types";
 import store from "./store";
 import {RingDeviceType} from "ring-client-api";
 
@@ -16,8 +16,13 @@ class SensorType implements EntityType<Sensor> {
 
             const sensor: Sensor = {
                 name: deviceName,
-                id: jsonObj["general"]["v2"]["zid"],
-                state: jsonObj["device"]["v1"]["faulted"],
+                host: jsonObj["general"]["v2"]["zid"],
+                mac: jsonObj["adapter"]["v1"]["address"],
+                state: {
+                    "contact": jsonObj["device"]["v1"]["faulted"],
+                    "battery": jsonObj["general"]["v2"]["batteryLevel"]
+                },
+                deviceType: ContactSensorDeviceType,
             }
             sensors.push(sensor);
         }
