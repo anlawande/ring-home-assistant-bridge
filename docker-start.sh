@@ -13,5 +13,5 @@ docker build . -t ring-home-assistant-bridge
 docker image rm "$prevImage"
 
 echo "ctrl+p,ctrl+q to detach"
-docker-compose run --service-ports ring-home-assistant-bridge
+docker-compose up -d ring-home-assistant-bridge
 #ctrl+p,ctrl+q to detach

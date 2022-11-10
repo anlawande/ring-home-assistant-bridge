@@ -14,11 +14,13 @@ class LockType implements EntityType<Lock> {
             deviceName += " (Lock)";
 
             const host = jsonObj["general"]["v2"]["zid"];
+            const mac = jsonObj["adapter"] ? jsonObj["adapter"]["v1"]["address"]
+                : jsonObj["context"]["v1"]["adapter"]["v1"]["address"];
 
             const lock: Lock = {
                 name: deviceName,
-                host: host,
-                mac: jsonObj["adapter"]["v1"]["address"],
+                host,
+                mac,
                 state: {
                     // @ts-ignore
                     "locked": jsonObj["device"]["v1"]["locked"] === 'locked',

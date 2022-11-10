@@ -72,8 +72,11 @@ async function setSubscriptions(ringApi: RingApi) {
 
 let hasInitialized = false;
 
-function getDevicesByType(json: any, deviceType: string) {
-    let devices = [];
+function getDevicesByType(json: any, deviceType: string): any[] {
+    let devices: any[] = [];
+    if (!json["body"]) {
+        return devices;
+    }
     for (let jsonObject of json["body"]) {
         if (!jsonObject["device"]) {
             continue;
@@ -116,6 +119,9 @@ function addEntitiesToStore(json: any) {
 function getBypassedHosts(json: any): Set<string> {
     const bypassedHosts: Set<string> = new Set();
 
+    if (!json["body"]) {
+        return bypassedHosts;
+    }
     const securityPanels = getDevicesByType(json, "security-panel");
     if (!securityPanels.length) {
         console.warn("No security panel found!");

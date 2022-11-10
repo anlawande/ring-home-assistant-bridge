@@ -15,11 +15,13 @@ class SensorType implements EntityType<Sensor> {
             deviceName += " (Contact Sensor)";
 
             const host = jsonObj["general"]["v2"]["zid"];
+            const mac = jsonObj["adapter"] ? jsonObj["adapter"]["v1"]["address"]
+                            : jsonObj["context"]["v1"]["adapter"]["v1"]["address"];
 
             const sensor: Sensor = {
                 name: deviceName,
-                host: host,
-                mac: jsonObj["adapter"]["v1"]["address"],
+                host,
+                mac,
                 state: {
                     "contact": jsonObj["device"]["v1"]["faulted"],
                     "battery": jsonObj["general"]["v2"]["batteryLevel"],
