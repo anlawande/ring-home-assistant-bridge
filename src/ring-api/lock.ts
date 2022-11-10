@@ -17,6 +17,9 @@ class LockType implements EntityType<Lock> {
             const mac = jsonObj["adapter"] ? jsonObj["adapter"]["v1"]["address"]
                 : jsonObj["context"]["v1"]["adapter"]["v1"]["address"];
 
+            const existingDevice = store.getLockById(mac);
+            const batteryLevel = jsonObj["general"]["v2"]["batteryLevel"] || existingDevice.state["battery"];
+
             const lock: Lock = {
                 name: deviceName,
                 host,
@@ -24,7 +27,7 @@ class LockType implements EntityType<Lock> {
                 state: {
                     // @ts-ignore
                     "locked": jsonObj["device"]["v1"]["locked"] === 'locked',
-                    "battery": jsonObj["general"]["v2"]["batteryLevel"],
+                    "battery": batteryLevel,
                     // @ts-ignore
                     "bypassed": bypassedHosts.has(host),
                 },

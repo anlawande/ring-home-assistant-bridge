@@ -18,13 +18,16 @@ class SensorType implements EntityType<Sensor> {
             const mac = jsonObj["adapter"] ? jsonObj["adapter"]["v1"]["address"]
                             : jsonObj["context"]["v1"]["adapter"]["v1"]["address"];
 
+            const existingDevice = store.getSensorById(mac);
+            const batteryLevel = jsonObj["general"]["v2"]["batteryLevel"] || existingDevice.state["battery"];
+
             const sensor: Sensor = {
                 name: deviceName,
                 host,
                 mac,
                 state: {
                     "contact": jsonObj["device"]["v1"]["faulted"],
-                    "battery": jsonObj["general"]["v2"]["batteryLevel"],
+                    "battery": batteryLevel,
                     // @ts-ignore
                     "bypassed": bypassedHosts.has(host),
                 },

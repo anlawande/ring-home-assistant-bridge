@@ -21,6 +21,10 @@ function getSensorById(sensorId: string): Sensor {
     return store["sensors"][sensorId] || {};
 }
 
+function getLockById(lockId: string): Sensor {
+    return store["locks"][lockId] || {};
+}
+
 function printStore(): object {
     return store;
 }
@@ -29,5 +33,6 @@ export default {
     addSensors,
     addLocks,
     getSensorById,
+    getLockById,
     printStore,
 }
