@@ -72,24 +72,32 @@ async function setSubscriptions(ringApi: RingApi) {
 
 let hasInitialized = false;
 
+function getDevicesByType(json: any, deviceType: string) {
+    let devices = [];
+    for (let jsonObject of json["body"]) {
+        if (!jsonObject["device"]) {
+            continue;
+        }
+        if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
+            devices.push(jsonObject);
+        }
+    }
+    return devices;
+}
+
 function addEntitiesToStore(json: any) {
     try {
         if (json["msg"] !== 'DataUpdate' && json["msg"] !== "DeviceInfoDocGetList") {
             return;
         }
+
+        const bypassedHosts = getBypassedHosts(json);
+
         for (let entry of typeServiceMap.entries()) {
             const deviceType = entry[0];
             const entityService = entry[1];
-            let devices = [];
-            for (let jsonObject of json["body"]) {
-                if (!jsonObject["device"]) {
-                    continue;
-                }
-                if (jsonObject["general"]["v2"]["deviceType"] === deviceType) {
-                    devices.push(jsonObject);
-                }
-            }
-            const typedObjects = entityService.deserialize(devices);
+            const devices = getDevicesByType(json, deviceType);
+            const typedObjects = entityService.deserialize(devices, bypassedHosts);
             entityService.addAllToStore(typedObjects);
         }
 
@@ -103,6 +111,22 @@ function addEntitiesToStore(json: any) {
         console.error(JSON.stringify(json));
         server.setHealth(false);
     }
+}
+
+function getBypassedHosts(json: any): Set<string> {
+    const bypassedHosts: Set<string> = new Set();
+
+    const securityPanels = getDevicesByType(json, "security-panel");
+    if (!securityPanels.length) {
+        console.warn("No security panel found!");
+        return bypassedHosts;
+    }
+    const securityPanel = securityPanels[0];
+
+    securityPanel["device"]["v1"]["bypasses"]
+        .map((bypassObj: any) => bypassedHosts.add(bypassObj["zid"]));
+
+    return bypassedHosts;
 }
 
 run();

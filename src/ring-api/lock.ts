@@ -1,4 +1,4 @@
-import {EntityType, Lock, LockDeviceType} from "./types";
+import {EntityType, Lock} from "./types";
 import store from "./store";
 
 class LockType implements EntityType<Lock> {
@@ -6,23 +6,27 @@ class LockType implements EntityType<Lock> {
         store.addLocks(locks);
     }
 
-    deserialize(json: any): Lock[] {
+    deserialize(json: any, bypassedHosts: Set<string>): Lock[] {
         const locks: Lock[] = [];
         for (let jsonObj of json) {
             let deviceName = jsonObj["general"]["v2"]["name"];
             deviceName = deviceName || jsonObj["context"]["v1"]["deviceName"];
-            deviceName += " (Lock)"
+            deviceName += " (Lock)";
+
+            const host = jsonObj["general"]["v2"]["zid"];
 
             const lock: Lock = {
                 name: deviceName,
-                host: jsonObj["general"]["v2"]["zid"],
+                host: host,
                 mac: jsonObj["adapter"]["v1"]["address"],
                 state: {
                     // @ts-ignore
                     "locked": jsonObj["device"]["v1"]["locked"] === 'locked',
-                    "battery": jsonObj["general"]["v2"]["batteryLevel"]
+                    "battery": jsonObj["general"]["v2"]["batteryLevel"],
+                    // @ts-ignore
+                    "bypassed": bypassedHosts.has(host),
                 },
-                deviceType: LockDeviceType,
+                deviceType: this.getDeviceType(),
             }
             locks.push(lock);
         }

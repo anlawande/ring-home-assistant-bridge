@@ -1,7 +1,7 @@
 export interface EntityType<T> {
     getDeviceType(): string;
     addAllToStore(entities: T[]): void;
-    deserialize(json: any): T[];
+    deserialize(json: any, bypassedHosts: Set<string>): T[];
 }
 
 export interface RingDevice {
@@ -14,6 +14,3 @@ export interface RingDevice {
 
 export interface Sensor extends RingDevice {}
 export interface Lock extends RingDevice {}
-
-export const ContactSensorDeviceType = "ContactSensor"
-export const LockDeviceType = "Lock"
