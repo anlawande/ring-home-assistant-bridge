@@ -16,11 +16,6 @@ typeServiceMap.set(lock.getDeviceType(), lock);
 
 dotenv.config();
 
-if (!process.env.locationId) {
-    console.log("Missing config locationId");
-    process.exit(1);
-}
-
 if (!process.env.tokenFile) {
     console.log("Missing config tokenFile");
     process.exit(1);
@@ -39,12 +34,13 @@ async function run() {
         refreshToken = await acquireRefreshToken();
         fs.writeFileSync(process.env.tokenFile as string, refreshToken, {encoding: 'utf8'});
     }
+    const locationIds = process.env.locationId ? [process.env.locationId as string] : undefined;
     const ringApi = new RingApi({
         refreshToken, //'token generated with ring-auth-cli.  See https://github.com/dgreif/ring/wiki/Refresh-Tokens',
 
         // The following are all optional. See below for details
         cameraStatusPollingSeconds: 20,
-        locationIds: [process.env.locationId as string]
+        locationIds,
     });
     ringApi.onRefreshTokenUpdated.subscribe(({newRefreshToken}) => {
         refreshToken = newRefreshToken;
@@ -58,6 +54,11 @@ async function setSubscriptions(ringApi: RingApi) {
     try {
         const locations = await ringApi.getLocations();
         for (let location of locations) {
+            if (isForceAuth) {
+                console.log(`locationId: ${location.locationId}`);
+                process.exit(0);
+                return;
+            }
             await location.createConnection();
             location.onDeviceList.subscribe(addEntitiesToStore);
             location.onDataUpdate.subscribe(addEntitiesToStore);
