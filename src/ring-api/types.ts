@@ -1,3 +1,9 @@
+export enum AlarmMode {
+    DISARMED = "DISARMED",
+    HOME = "HOME",
+    AWAY = "AWAY",
+}
+
 export interface EntityType<T> {
     getDeviceType(): string;
     addAllToStore(entities: T[]): void;
@@ -10,6 +16,13 @@ export interface RingDevice {
     host: string,
     state: { [type: string]: [value: any]},
     deviceType: string,
+}
+
+export interface Alarm {
+    host: string,
+    mac: string,
+    alarmMode: AlarmMode,
+    bypassList: string[],
 }
 
 export interface Sensor extends RingDevice {}

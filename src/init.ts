@@ -6,13 +6,16 @@ import SensorType from "./ring-api/sensor";
 import LockType from "./ring-api/lock";
 import server from "./server";
 import {EntityType} from "./ring-api/types";
+import AlarmType from "./ring-api/alarm";
 
 const sensor = new SensorType()
 const lock = new LockType()
+const alarm = new AlarmType()
 
 const typeServiceMap = new Map<string, EntityType<any>>();
 typeServiceMap.set(sensor.getDeviceType(), sensor);
 typeServiceMap.set(lock.getDeviceType(), lock);
+typeServiceMap.set(alarm.getDeviceType(), alarm);
 
 dotenv.config();
 
@@ -123,7 +126,7 @@ function getBypassedHosts(json: any): Set<string> {
     if (!json["body"]) {
         return bypassedHosts;
     }
-    const securityPanels = getDevicesByType(json, "security-panel");
+    const securityPanels = getDevicesByType(json, alarm.getDeviceType());
     if (!securityPanels.length) {
         console.warn("No security panel found!");
         return bypassedHosts;

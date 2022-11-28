@@ -1,8 +1,9 @@
-import {Lock, Sensor} from "./types";
+import {Alarm, Lock, Sensor} from "./types";
 
-const store: { [type: string]: {[name: string]: Sensor | Lock}} = {
+const store: { [type: string]: {[name: string]: Sensor | Lock | Alarm}} = {
     sensors: {},
     locks: {},
+    alarms: {},
 };
 
 function addSensors(sensors: Sensor[]) {
@@ -17,12 +18,18 @@ function addLocks(locks: Lock[]) {
     });
 }
 
-function getSensorById(sensorId: string): Sensor {
-    return store["sensors"][sensorId] || {};
+function addAlarms(alarms: Alarm[]) {
+    alarms.forEach(value => {
+        store.alarms[value.host] = value;
+    });
 }
 
-function getLockById(lockId: string): Sensor {
-    return store["locks"][lockId] || {};
+function getSensorById(sensorId: string): Sensor {
+    return store["sensors"][sensorId] as Sensor || {};
+}
+
+function getLockById(lockId: string): Lock {
+    return store["locks"][lockId] as Lock || {};
 }
 
 function printStore(): object {
@@ -32,6 +39,7 @@ function printStore(): object {
 export default {
     addSensors,
     addLocks,
+    addAlarms,
     getSensorById,
     getLockById,
     printStore,
