@@ -38,6 +38,17 @@ class SensorType implements EntityType<Sensor> {
         return sensors;
     }
 
+    updateBypassed(bypassedHosts: Set<string>): void {
+        const sensors = Object.values(store.getSensors());
+
+        for (let sensor of sensors) {
+            // @ts-ignore
+            sensor.state["bypassed"] = bypassedHosts.has(sensor.host);
+        }
+
+        this.addAllToStore(sensors);
+    }
+
     getDeviceType(): string {
         return RingDeviceType.ContactSensor;
     }

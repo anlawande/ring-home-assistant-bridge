@@ -7,6 +7,7 @@ import LockType from "./ring-api/lock";
 import server from "./server";
 import {EntityType} from "./ring-api/types";
 import AlarmType from "./ring-api/alarm";
+import store from "./ring-api/store";
 
 const sensor = new SensorType()
 const lock = new LockType()
@@ -50,7 +51,7 @@ async function run() {
         fs.writeFileSync(process.env.tokenFile as string, refreshToken, {encoding: 'utf8'});
     });
     await setSubscriptions(ringApi);
-    server.init();
+    server.init(ringApi);
 }
 
 async function setSubscriptions(ringApi: RingApi) {
@@ -97,8 +98,12 @@ function addEntitiesToStore(json: any) {
         if (json["msg"] !== 'DataUpdate' && json["msg"] !== "DeviceInfoDocGetList") {
             return;
         }
+        if (json["context"] && json["context"]["eventLevel"] === 80) {
+            return;
+        }
 
         const bypassedHosts = getBypassedHosts(json);
+        const previousBypassedHosts = getPreviousBypassedHosts();
 
         for (let entry of typeServiceMap.entries()) {
             const deviceType = entry[0];
@@ -106,6 +111,10 @@ function addEntitiesToStore(json: any) {
             const devices = getDevicesByType(json, deviceType);
             const typedObjects = entityService.deserialize(devices, bypassedHosts);
             entityService.addAllToStore(typedObjects);
+        }
+
+        if (!eqSet(bypassedHosts, previousBypassedHosts)) {
+            sensor.updateBypassed(bypassedHosts);
         }
 
         if (!hasInitialized && json["msg"] === "DeviceInfoDocGetList") {
@@ -128,15 +137,27 @@ function getBypassedHosts(json: any): Set<string> {
     }
     const securityPanels = getDevicesByType(json, alarm.getDeviceType());
     if (!securityPanels.length) {
-        console.warn("No security panel found!");
+        // console.warn("No security panel found!");
         return bypassedHosts;
     }
     const securityPanel = securityPanels[0];
 
-    securityPanel["device"]["v1"]["bypasses"]
-        .map((bypassObj: any) => bypassedHosts.add(bypassObj["zid"]));
+    const bypasses = securityPanel["device"]["v1"]["bypasses"] || securityPanel["context"]["v1"]["device"]["v1"]["bypasses"]
+    bypasses.map((bypassObj: any) => bypassedHosts.add(bypassObj["zid"]));
 
     return bypassedHosts;
 }
+
+function getPreviousBypassedHosts(): Set<string> {
+    const alarms = Object.values(store.getAlarms());
+    if (!alarms.length) {
+        return new Set();
+    }
+    return new Set(alarms[0].bypassList);
+}
+
+const eqSet = (xs: Set<any>, ys: Set<any>) =>
+    xs.size === ys.size &&
+    [...xs].every((x) => ys.has(x));
 
 run();

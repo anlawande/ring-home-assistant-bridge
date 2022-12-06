@@ -10,10 +10,11 @@ class AlarmType implements EntityType<Alarm> {
     deserialize(json: any, bypassedHosts: Set<string>): Alarm[] {
         const alarms = [];
         for (let jsonObj of json) {
+            const alarmMode = jsonObj["device"]["v1"]["mode"] || jsonObj["context"]["v1"]["device"]["v1"]["mode"];
             const alarm: Alarm = {
                 host: jsonObj["general"]["v2"]["zid"],
                 mac: jsonObj["general"]["v2"]["zid"],
-                alarmMode: getFriendlyMode(jsonObj["device"]["v1"]["mode"]),
+                alarmMode: getFriendlyMode(alarmMode),
                 bypassList: [...bypassedHosts],
             }
             alarms.push(alarm);

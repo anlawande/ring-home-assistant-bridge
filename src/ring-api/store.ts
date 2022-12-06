@@ -32,6 +32,14 @@ function getLockById(lockId: string): Lock {
     return store["locks"][lockId] as Lock || {};
 }
 
+function getSensors(): { string: Sensor } {
+    return store.sensors as { string: Sensor };
+}
+
+function getAlarms(): { string: Alarm } {
+    return store.alarms as { string: Alarm };
+}
+
 function printStore(): object {
     return store;
 }
@@ -40,6 +48,8 @@ export default {
     addSensors,
     addLocks,
     addAlarms,
+    getSensors,
+    getAlarms,
     getSensorById,
     getLockById,
     printStore,
