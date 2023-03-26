@@ -1,4 +1,4 @@
-import { RingApi } from 'ring-client-api'
+import {RingApi, RingDevice} from 'ring-client-api'
 import dotenv from 'dotenv';
 import {acquireRefreshToken} from "./ring-api/refresh-token";
 import * as fs from "fs";
@@ -8,6 +8,8 @@ import server from "./server";
 import {EntityType} from "./ring-api/types";
 import AlarmType from "./ring-api/alarm";
 import store from "./ring-api/store";
+import deviceStore from "./ring-api/deviceStore";
+import {RingDevice as RingApiDevice} from "ring-client-api"
 
 const sensor = new SensorType()
 const lock = new LockType()
@@ -66,6 +68,11 @@ async function setSubscriptions(ringApi: RingApi) {
             await location.createConnection();
             location.onDeviceList.subscribe(addEntitiesToStore);
             location.onDataUpdate.subscribe(addEntitiesToStore);
+
+            //This is a duplicate of subscribing to the device list above
+            //but the above is raw json device response vs below if cast to RingDevice type
+            //that is easier to call sendMessage functionality
+            addDeviceEntitiesToStore(await location.getDevices());
         }
         server.setHealth(true);
     }
@@ -127,6 +134,16 @@ function addEntitiesToStore(json: any) {
         console.error(JSON.stringify(json));
         server.setHealth(false);
     }
+}
+
+function addDeviceEntitiesToStore(devices: RingApiDevice[]) {
+    const locks = [];
+    for (let device of devices) {
+        if (device.deviceType == lock.getDeviceType()) {
+            locks.push(device);
+        }
+    }
+    deviceStore.addLocks(locks);
 }
 
 function getBypassedHosts(json: any): Set<string> {

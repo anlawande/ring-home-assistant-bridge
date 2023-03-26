@@ -1,5 +1,6 @@
 import {Request, Response} from "express";
 import store from './ring-api/store';
+import deviceStore from './ring-api/deviceStore';
 import dotenv from 'dotenv';
 import {RingApi} from "ring-client-api";
 import assert from "assert";
@@ -32,6 +33,34 @@ app.get('/health', (req: Request, res: Response) => {
 app.post('/alarm', async (req: Request, res: Response) => {
     try {
         await setAlarmMode(req.body.mode);
+    }
+    catch (e) {
+        console.error(e);
+        res.status(400).send(e);
+        return;
+    }
+    res.json({ health: healthState });
+});
+
+app.post('/lock', async (req: Request, res: Response) => {
+    try {
+        if (!req.body.id || req.body.state === null || req.body.state === undefined) {
+            res.status(400).send();
+            return;
+        }
+
+        const lock = deviceStore.getLockById(req.body.id);
+        if (!lock) {
+            res.status(404).send();
+            return;
+        }
+
+        if (req.body.state) {
+            lock.sendCommand("lock.lock", {});
+        }
+        else {
+            lock.sendCommand("lock.unlock", {});
+        }
     }
     catch (e) {
         console.error(e);
